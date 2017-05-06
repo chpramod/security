@@ -1,0 +1,40 @@
+#
+# [file:#lines]
+# desc
+#
+
+[http.c:59]
+The 'buf' variable of the http_request_line function can be overflown by sending a big enough buffer as a HTTP request. 
+The overflown buffer can now overwrite other pointers of the function, the frame base pointer and also the return address of the stack.
+If the HTTP request contains 4200 bytes of junk data, then the return address is corrupted and program crashes. The first line of the request should be of the form "GET / HTTP/1.0AAAA...4124 times...\r\n"
+Canary (terminating) can be used to prevent this exploit because the canary will have a terminating character after which we cannot overwrite the stack. So atleast the return address and frame base ptr can be protected. 
+
+    http.c:65<if (http_read_line(fd, buf) < 0)>
+
+[http.c:110]
+The 'buf' variable of the http_request_header function can be overflown similar to the previous buffer. However, the HTTP request in this case should be overflown in the second line. The second line of the request should be of the form 
+"GET / HTTP/1.0\r\n
+Content-Type: text/htmlAAAA....4120 times...\r\n"
+Even here, a terminating canary can be used.
+    http.c:121<if (http_read_line(fd, buf) < 0)>
+
+[http.c:265]
+The 'pn' variable of the http_serve function can be overflown by passing a large enough path as the URL. The function strcat concatenates the contents of buffer "name" to the buffer "pn". However, the size of pn is 1024 bytes where as the size of name if 2048 bytes. So, a large enough value of name can overflow pn variable and overwrite the function pointer "handler". So, when the function handler() is called in Line 287, the pointer is already overwritten and the program encounters segmentation fault.
+In this case, a canary might be able to protect the program because a function pointer is in the local variable section of the stack, mostly before the canary. So, using a canary (the one usually placed before return address) might not help.
+
+	http.c:273<strcat(pn, name);>
+
+[zookd.c:63]
+The 'env' variable of the process_client function can be overflown by correctly passing large buffer and a large URL. The 'env' buffer is filled in the http_request_line function, where the tail of GET request line(sp2) is copied into env first and then, request path is copied into it. Along with these, some strings are encoded in it such as SERVER_PROTOCOL, REQUEST_METHOD, SERVER_NAME=zoobar.org etc. The size of reqpath & sp2 combined can be made 4096 bytes, so that the extra encoded would cause a buffer overflow. Also, in process_client function, since 'env' is the top most buffer, a buffer size of around 4124 bytes (with a 30 byte overflow) would be sufficient to overwrite return address and other important variables. Note that this particular vulnerability can be exploited only if the first vulnerability (http.c:59) is not crashing the system.
+"GET / HTTP/1.0AAAA....4080 times\r\n"
+A terminating canary can be helpful in this case to prevent the attack.
+    http.c:87<envp += sprintf(envp, "REQUEST_METHOD=%s", buf) + 1;>
+    http.c:88<envp += sprintf(envp, "SERVER_PROTOCOL=%s", sp2) + 1;>
+    http.c:100<envp += sprintf(envp, "REQUEST_URI=%s", reqpath) + 1;>
+    http.c:101<envp += sprintf(envp, "SERVER_NAME=zoobar.org") + 1;>
+
+[http.c:303]
+The buf variable (line 302) can be overflown. The buffer is 1024 bytes long. The values of pn buffer(1024 bytes) and PATH_INFO environment variable(which can be as long as 1024 bytes) are copied into this buf. So, it can easily cause an overflow in the http_serve_file function.
+A terminating canary can be used to protect the program since there are no other exploitable data structures in this function's stack.
+	http.c:303<sprintf(buf, "%s%s", pn, getenv("PATH_INFO"));>
+# many more come here

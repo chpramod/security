@@ -1,0 +1,59 @@
+## Place your answers here.
+
+
+NOTE: I did not see that answers.txt had to be filled while submitting Part A of the project. I have filled it and am submitting them with Part B. I kindly request you to consider them while grading.
+
+
+Question 2
+==========
+
+The exploit 2a triggers the vulnerability #1 in bugs.txt. The exploit 2b triggers the vulnerability #3 in bugs.txt.
+
+Question 3
+==========
+
+The code provided for question 3 (exploits 3) exploits vulnerabilities 1 for executing shellcode on the stack. Apart from this, all the other vulnerabilities can also be exploited using the same strategy, because all of them have an unprotected buffer (prone to overflow vulnerability) and return address can be overwritten in all of them, with enough length to also place the shellcode on the stack. Even in vul #3, we need to overwrite the handler pointer to now point to the shellcode. Since it expects no arguments, the shellcode will start executing. The only edge case comes for vulnerability #4 where the overflow occurs due to the extra strings (as mentioned in bugs.txt). But even in that case, by carefully aligning the strings, shellcode can be placed on the stack and return address can be overwritten.
+
+Question 4
+==========
+
+Similar to question 3, the codes provided for question 4 (exploits 4a and 4b) exploit vulnerabilities 1 and 3 for libc based attacks. Apart from them, all the other vulnerabilities can also be exploited using the same strategy, because all of them have an unprotected buffer (prone to overflow vulnerability) and return address can be overwritten in all of them, with enough length to also place the grades.txt on the stack and also fill in the arguments. Even here, the only edge case comes for vulnerability #4 where the overflow occurs due to the extra strings (as mentioned in bugs.txt). But even in that case, by carefully aligning the strings, a libc function can still be invoked to delete files.
+
+
+Question 5
+==========
+
+Vulnerability 1:
+----------------
+The application is vulnerable to DoS attacks by overloading the server with too many requests (HTTP Flooding). For example, the following piece of code can be added in the exploit file to keep sending non-terminating requests. The server (on the virtual machine) crashes in around 10-20 seconds and becomes practically unusable for actual requests. It works because the server does not have any mechanism to filter IP traffic.
+
+########### CODE ###########
+
+request = "GET /zoobar/media/lion_sleeping.jpg"+" HTTP/1.0" + "\r\n" + \
+            "Content-Type: text/html" + "\r\n"
+
+ while (1):
+    child = os.fork()
+    if (child==0):
+        resp = send_req(sys.argv[1], int(sys.argv[2]), req)
+    else:
+        resp = send_req(sys.argv[1], int(sys.argv[2]), req) 
+
+####### END OF CODE ########
+
+To fight against this type of DoS attack is usually difficult. One can try listing out IPs affecting the server and if only a few are involved, the use a firewall against them. If it is a highly distributed DDoS attack, then this solution also might not help much. In such cases, only high level solutions such as redirectly the website to DDoS mitigation companies might be the only way out.
+
+Vulnerability 2:
+----------------
+
+The application server filesystem is completely transparent. That is, there is no privilege seperation with regard to the client using the application. Any file on the server's file system can be retrieved using a simple GET request. The following request would fetch the "person" file of the database of the server, which has all the login information related to the zoobar application.
+
+request = "GET /zoobar/db/person/person.db"+" HTTP/1.0" + "\r\n" + \
+            "Content-Type: text/html" + "\r\n\r\n"
+
+Similarly, the following request would give access to the bin folder containing all server's application binaries!!
+
+request = "GET /../../../bin/xyz" HTTP/1.0" + "\r\n" + \
+            "Content-Type: text/html" + "\r\n\r\n"
+
+This is happening because the server is not enforcing appropriate privilege seperation policies. The permissions of almost all the directories and binaries are set to read+execute. This is a huge vulnerability as it leaves the server wide open. Attacker can execute any binary of the server's OS and read all the files of the server's running account. To prevent it, proper privileges need to be assigned to the files and directories and also, nagivation through the web application must be tightly montiored, disabling any direct URL access, and allowing only access through proper channel (for example, "zoobar/index.html can only be reached through index.html" and so on).  

